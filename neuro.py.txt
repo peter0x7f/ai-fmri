@@ -1,0 +1,62 @@
+import torch
+import torch.nn as nn
+import torch.optim as optim
+
+# Define the model
+class BrainModel(nn.Module):
+    def __init__(self):
+        super(BrainModel, self).__init__()
+        self.conv1 = nn.Conv2d(1, 32, kernel_size=3, stride=1, padding=1)
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1)
+        self.fc1 = nn.Linear(64 * 26 * 26, 128)
+        self.fc2 = nn.Linear(128, 2)
+        self.relu = nn.ReLU()
+        self.dropout = nn.Dropout2d(0.25)
+        self.maxpool = nn.MaxPool2d(kernel_size=2)
+
+    def forward(self, x):
+        x = self.conv1(x)
+        x = self.relu(x)
+        x = self.conv2(x)
+        x = self.relu(x)
+        x = self.maxpool(x)
+        x = self.dropout(x)
+        x = x.view(x.size(0), -1)
+        x = self.fc1(x)
+        x = self.relu(x)
+        x = self.fc2(x)
+        return x
+
+# Load the training data
+train_data = # Load the fMRI images of brains with mental disorders
+train_labels = # Load the labels for the training data
+
+# Convert the data to PyTorch tensors
+train_data = torch.Tensor(train_data)
+train_labels = torch.LongTensor(train_labels)
+
+# Create the model
+model = BrainModel()
+
+# Define the loss function and the optimizer
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+
+# Train the model
+for epoch in range(10):
+    running_loss = 0.0
+    for i, data in enumerate(train_data, 0):
+        inputs, labels = data
+        optimizer.zero_grad()
+
+        outputs = model(inputs)
+        loss = criterion(outputs, labels)
+        loss.backward()
+        optimizer.step()
+
+        running_loss += loss.item()
+        if i % 2000 == 1999:
+            print('[%d, %5d] loss: %.3f' % (epoch + 1, i + 1, running_loss / 2000))
+            running_loss = 0.0
+
+print('Finished Training')
